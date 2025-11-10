@@ -10,6 +10,26 @@ const app = express()
 
 app.use(express.json())
 
+
+const authMiddleware = (req, res, next) => {
+    const authHeader = req.headers.authorization
+
+    if (!authHeader) req.status(401).json({
+        error: "Нет токена авторизации"
+    })
+
+    if (!(authHeader.split(" ")[1])) res.status(401).json({
+        error: "Неверный формат токена"
+    })
+
+    try {
+        const token = authHeader.split(" ")[1
+            
+        ]
+    } catch (error) {
+        console.error(error)
+    }
+}
 app.post('/register', (req, res) => {
     const { email, name, password } = req.body
 
@@ -33,19 +53,27 @@ app.post('/register', (req, res) => {
 })
 
 app.post('/login', (req, res) => {
-    const { email, password } = req.body
+    try {
+        const { email, password } = req.body
 
-    const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(email)
+        const user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(email)
 
-    if (!user) res.status(401).json({ error: 'Неправильные данные' })
+        if (!user) res.status(401).json({ error: 'Неправильные данные' })
 
-    const valid = bcrypt.compareSync(password, user.password)
+        const valid = bcrypt.compareSync(password, user.password)
 
-    if (!valid) res.status(401).json({ error: 'Неправильные данные' })
+        if (!valid) res.status(401).json({ error: 'Неправильные данные' })
 
-    const token = jwt.sign({ ...user }, SECRET, { expiresIn: '24h' })
+        const token = jwt.sign({ ...user }, SECRET, { expiresIn: '24h' })
 
-    res.json(token)
+        const { password: p, ...response } = user
+
+        res.status(200).json({ token: token, ...response })
+        res.json(token)
+
+    } catch (error) {
+        console.error(error)
+    }
 })
 
 app.get('/', (_, res) => {
