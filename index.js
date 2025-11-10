@@ -14,21 +14,21 @@ app.use(express.json())
 const authMiddleware = (req, res, next) => {
     const authHeader = req.headers.authorization
 
-    if (!authHeader) req.status(401).json({
+    if (!authHeader) res.status(401).json({
         error: "Нет токена авторизации"
     })
 
     if (!(authHeader.split(" ")[1])) res.status(401).json({
         error: "Неверный формат токена"
     })
-
     try {
         const token = authHeader.split(" ")[1]
-        const decoced = jwt.verify(token, SECRET)
+        const decoded = jwt.verify(token, SECRET)
         req.user = decoded
         next()
     } catch (error) {
         console.error(error)
+        req.status(401).json({ error: "Неправильный токен" })
     }
 }
 app.post('/register', (req, res) => {
@@ -74,6 +74,7 @@ app.post('/login', (req, res) => {
 
     } catch (error) {
         console.error(error)
+        res.status(401).json({ error: "Ошибка авторизации" })
     }
 })
 
@@ -115,6 +116,7 @@ app.post('/todos', authMiddleware, (req, res) => {
         res.status(201).json(newUser)
     } catch (error) {
         console.error(error)
+
     }
 })
 
@@ -143,6 +145,7 @@ app.patch('/todos/:id/toggle', authMiddleware, (req, res) => {
         res.status(200).json({ message: 'Задача обновлена' })
     } catch (error) {
         console.error(error)
+
     }
 })
 
