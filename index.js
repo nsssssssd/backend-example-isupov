@@ -141,7 +141,3 @@ app.listen('3000', () => {
     console.log('Сервер запущен на порту 3000')
 })
 
- curl 
--X POST "http://localhost:3000/register" 
--H "Content-Type: application/json" 
--d '{"email": "example@domain.com", "password": "123456", "name": "ktkv"}'
