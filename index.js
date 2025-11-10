@@ -23,9 +23,10 @@ const authMiddleware = (req, res, next) => {
     })
 
     try {
-        const token = authHeader.split(" ")[1
-            
-        ]
+        const token = authHeader.split(" ")[1]
+        const decoced = jwt.verify(token, SECRET)
+        req.user = decoded
+        next()
     } catch (error) {
         console.error(error)
     }
@@ -76,29 +77,9 @@ app.post('/login', (req, res) => {
     }
 })
 
-app.get('/', (_, res) => {
-    res.send('Hello world')
-})
-
-app.post('/', (req, res) => {
-    console.log(req.body)
-    res.send('Успех')
-})
-
 app.get('/users', (_, res) => {
     const data = db.prepare('SELECT * FROM users').all()
     res.json(data)
-})
-
-app.delete('/users/:id', (req, res) => {
-    const { id } = req.params
-    const query = db.prepare(`DELETE FROM users WHERE id = ?`)
-    const result = query.run(id)
-
-    if (result.changes === 0)
-        res.status(404).json({ error: 'Пользователь не был найден' })
-
-    res.status(200).json({ message: 'Юзер успешно удален' })
 })
 
 app.get('/todos', (_, res) => {
@@ -106,7 +87,7 @@ app.get('/todos', (_, res) => {
     res.json(data)
 })
 
-app.delete('/todos', (req, res) => {
+app.delete('/todos/:id', authMiddleware, (req, res) => {
     const { id } = req.params
     const query = db.prepare(`DELETE FROM todos WHERE id = ?`)
     const result = query.run(id)
@@ -117,7 +98,7 @@ app.delete('/todos', (req, res) => {
     res.status(200).json({ message: 'Задача успешно удалена' })
 })
 
-app.post('/todos', (req, res) => {
+app.post('/todos', authMiddleware, (req, res) => {
     const { name, status } = req.body
 
     try {
@@ -137,7 +118,7 @@ app.post('/todos', (req, res) => {
     }
 })
 
-app.delete('/users/:id', (req, res) => {
+app.delete('/users/:id', authMiddleware, (req, res) => {
     const { id } = req.params
     const query = db.prepare(`DELETE FROM users WHERE id = ?`)
     const result = query.run(id)
@@ -148,7 +129,7 @@ app.delete('/users/:id', (req, res) => {
     res.status(200).json({ message: 'Юзер успешно удален' })
 })
 
-app.patch('/todos/:id/toggle', (req, res) => {
+app.patch('/todos/:id/toggle', authMiddleware, (req, res) => {
     try {
         const { id } = req.params
         const query = db.prepare(
@@ -166,6 +147,6 @@ app.patch('/todos/:id/toggle', (req, res) => {
 })
 
 app.listen('3000', () => {
-    console.log('Сервер запущен на порту 3000')
+    console.log('Сервер запущен на порту 3000, Слава России')
 })
 
